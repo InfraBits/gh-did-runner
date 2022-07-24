@@ -1,0 +1,28 @@
+name: Release
+on:
+  schedule: [{cron: '13 1 * * *'}]
+  workflow_dispatch: {inputs: {}}
+  push: {branches: [main]}
+permissions:
+  contents: write
+  packages: write
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.repository_owner }}' --password-stdin
+          image=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')
+          version=$(date +%Y-%m-%d)
+
+          # Build and publish today's image
+          DOCKER_BUILDKIT=1 docker build \
+            --pull \
+            -t "ghcr.io/${image}:${version}" \
+            -f Dockerfile .
+          docker push "ghcr.io/${image}:${version}"
+
+          # Update the `latest` tag
+          docker tag "ghcr.io/${image}:${version}" "ghcr.io/${image}:latest"
+          docker push "ghcr.io/${image}:latest"

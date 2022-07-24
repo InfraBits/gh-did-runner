@@ -1,0 +1,36 @@
+[Unit]
+Description=Github Actions Docker In Docker Runner
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+
+# Send output to syslog
+StandardOutput=syslog
+StandardError=syslog
+
+# Get the latest image
+ExecStartPre=/usr/bin/podman pull ghcr.io/infrabits/gh-did-runner
+
+# Stop the previous instance
+ExecStartPre=-/usr/bin/podman stop -t 10 gh-did-runner.%i
+ExecStartPre=-/usr/bin/podman rm gh-did-runner.%i
+
+# Generate a token
+ExecStartPre=/bin/sh -c 'systemctl set-environment runner_token=$$(/usr/sbin/ib-github-access-token --app-id=000000 --app-key=/etc/very-secret.key --github-org=magicpony)'
+
+# Run the container
+ExecStart=/usr/bin/podman run \
+    --init \
+    --rm \
+    --env 'RUNNER_NAME=gh-did-runner.%i' \
+    --env 'GITHUB_ORG=magicpony' \
+    --env 'GITHUB_TOKEN=${runner_token}' \
+    --name gh-did-runner.%i \
+    --privileged \
+    --oom-kill-disable \
+    --replace \
+    ghcr.io/infrabits/gh-did-runner
+
+[Install]
+WantedBy=default.target
