@@ -11,14 +11,14 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # Github runner setup
-RUN curl -so /tmp/actions-runner-linux-x64-2.294.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.294.0/actions-runner-linux-x64-2.294.0.tar.gz
+RUN curl -so /tmp/actions-runner-linux-x64-2.305.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz
 
 RUN useradd -s /bin/bash -r -m github-runner
 RUN usermod -aG docker github-runner
 RUN echo 'github-runner ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/github-runner
 
-RUN tar -C /home/github-runner -xzf /tmp/actions-runner-linux-x64-2.294.0.tar.gz
-RUN rm -rf /tmp/actions-runner-linux-x64-2.294.0.tar.gz
+RUN tar -C /home/github-runner -xzf /tmp/actions-runner-linux-x64-2.305.0.tar.gz
+RUN rm -rf /tmp/actions-runner-linux-x64-2.305.0.tar.gz
 RUN chown -R github-runner:github-runner /home/github-runner
 
 ADD entrypoint.sh /usr/sbin/entrypoint.sh
